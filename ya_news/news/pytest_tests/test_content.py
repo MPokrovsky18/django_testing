@@ -1,7 +1,6 @@
 import pytest
 from django.conf import settings
 from django.urls import reverse
-from django.utils import timezone
 
 
 @pytest.mark.django_db
@@ -24,6 +23,7 @@ def test_comments_order(client, news_id_for_args, add_comments_to_news):
     all_comments = news.comment_set.all()
     assert all_comments[0].created < all_comments[1].created
 
+
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     'parametrized_client, has_form_result',
@@ -32,7 +32,9 @@ def test_comments_order(client, news_id_for_args, add_comments_to_news):
         (pytest.lazy_fixture('client'), False),
     )
 )
-def test_client_has_form(parametrized_client, has_form_result, news_id_for_args):
+def test_client_has_form(
+    parametrized_client, has_form_result, news_id_for_args
+):
     url = reverse('news:detail', args=news_id_for_args)
     response = parametrized_client.get(url)
     assert ('form' in response.context) == has_form_result
