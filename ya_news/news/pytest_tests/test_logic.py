@@ -36,11 +36,11 @@ def test_user_cant_use_bad_words(author_client, news_id_for_args):
     url = reverse('news:detail', args=news_id_for_args)
     response = author_client.post(url, data=bad_words_data)
     assertFormError(
-            response,
-            form='form',
-            field='text',
-            errors=WARNING
-        )
+        response,
+        form='form',
+        field='text',
+        errors=WARNING
+    )
     assert Comment.objects.count() == 0
 
 

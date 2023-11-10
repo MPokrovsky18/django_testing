@@ -24,11 +24,11 @@ def test_pages_availability_for_anonymous_user(client, name, args):
 
 
 @pytest.mark.parametrize(
-        'parametrized_client, expected_status',
-        (
-            (pytest.lazy_fixture('author_client'), HTTPStatus.OK),
-            (pytest.lazy_fixture('admin_client'), HTTPStatus.NOT_FOUND),
-        ),
+    'parametrized_client, expected_status',
+    (
+        (pytest.lazy_fixture('author_client'), HTTPStatus.OK),
+        (pytest.lazy_fixture('admin_client'), HTTPStatus.NOT_FOUND),
+    ),
 )
 @pytest.mark.parametrize(
     'name',
