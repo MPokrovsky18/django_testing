@@ -1,30 +1,36 @@
 import pytest
 from django.conf import settings
-from django.urls import reverse
+
+from news.forms import CommentForm
 
 
-@pytest.mark.django_db
-def test_news_count(news_object_list):
-    assert len(news_object_list) == settings.NEWS_COUNT_ON_HOME_PAGE
+pytestmark = pytest.mark.django_db
 
 
-@pytest.mark.django_db
-def test_news_order(news_object_list):
-    all_dates = [news.date for news in news_object_list]
+def test_news_count(client, home_url, add_news_to_db):
+    response = client.get(home_url)
+    assert (
+        len(response.context['object_list'])
+        == settings.NEWS_COUNT_ON_HOME_PAGE
+    )
+
+
+def test_news_order(client, home_url, add_news_to_db):
+    response = client.get(home_url)
+    all_dates = [news.date for news in response.context['object_list']]
     assert all_dates == sorted(all_dates, reverse=True)
 
 
-@pytest.mark.django_db
-def test_comments_order(client, news_id_for_args, add_comments_to_news):
-    url = reverse('news:detail', args=news_id_for_args)
-    response = client.get(url)
+def test_comments_order(client, news_url, add_comments_to_news):
+    response = client.get(news_url)
     assert 'news' in response.context
     news = response.context['news']
-    all_comments = news.comment_set.all()
-    assert all_comments[0].created < all_comments[1].created
+    all_comments_dates = [
+        comment.created for comment in news.comment_set.all()
+    ]
+    assert all_comments_dates == sorted(all_comments_dates)
 
 
-@pytest.mark.django_db
 @pytest.mark.parametrize(
     'parametrized_client, has_form_result',
     (
@@ -33,8 +39,10 @@ def test_comments_order(client, news_id_for_args, add_comments_to_news):
     )
 )
 def test_client_has_form(
-    parametrized_client, has_form_result, news_id_for_args
+    parametrized_client, has_form_result, news_url
 ):
-    url = reverse('news:detail', args=news_id_for_args)
-    response = parametrized_client.get(url)
-    assert ('form' in response.context) == has_form_result
+    response = parametrized_client.get(news_url)
+    assert (
+        'form' in response.context
+        and isinstance(response.context['form'], CommentForm)
+    ) == has_form_result
