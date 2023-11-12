@@ -1,82 +1,68 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
-from django.urls import reverse
-
-from notes.models import Note
+from notes.tests.base import BaseTest
 
 
-NOTE_SLUG = 'new-note'
-HOME_URL = reverse('notes:home')
-LOGIN_URL = reverse('users:login')
-LOGOUT_URL = reverse('users:logout')
-SIGNUP_URL = reverse('users:signup')
-NOTE_LIST_URL = reverse('notes:list')
-NOTE_ADD_URL = reverse('notes:add')
-SUCCESS_URL = reverse('notes:success')
-NOTE_DETAIL_URL = reverse('notes:detail', args=(NOTE_SLUG,))
-NOTE_EDIT_URL = reverse('notes:edit', args=(NOTE_SLUG,))
-NOTE_DELETE_URL = reverse('notes:delete', args=(NOTE_SLUG,))
-
-
-User = get_user_model()
-
-
-class TestRoutes(TestCase):
+class TestRoutes(BaseTest):
+    """Tests for the availability of different routes."""
 
     @classmethod
     def setUpTestData(cls):
-        cls.author = User.objects.create(username='author')
-        cls.admin_user = User.objects.create(username='admin_user')
-        cls.author_client = Client()
-        cls.author_client.force_login(cls.author)
-        cls.admin_client = Client()
-        cls.admin_client.force_login(cls.admin_user)
-        cls.note = Note.objects.create(
-            text='какой-то текст',
-            slug=NOTE_SLUG,
-            author=cls.author,
-        )
+        """
+        Set up test data for route availability tests.
+        - Creates routes list.
+        """
+        super().setUpTestData()
         cls.urls = (
-            HOME_URL,
-            NOTE_LIST_URL,
-            NOTE_ADD_URL,
-            SUCCESS_URL,
-            NOTE_DETAIL_URL,
-            NOTE_EDIT_URL,
-            NOTE_DELETE_URL,
-            LOGIN_URL,
-            LOGOUT_URL,
-            SIGNUP_URL,
+            cls.HOME_URL,
+            cls.NOTE_LIST_URL,
+            cls.NOTE_ADD_URL,
+            cls.SUCCESS_URL,
+            cls.NOTE_DETAIL_URL,
+            cls.NOTE_EDIT_URL,
+            cls.NOTE_DELETE_URL,
+            cls.LOGIN_URL,
+            cls.LOGOUT_URL,
+            cls.SIGNUP_URL,
         )
 
     def test_pages_availability_for_author(self):
+        """Check if authorized author can access various pages."""
         for page_url in self.urls:
             with self.subTest(name=page_url):
                 response = self.author_client.get(page_url)
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_pages_availability_for_not_author(self):
+        """Check if authorized non-author can access various pages."""
         for page_url in self.urls:
             with self.subTest(name=page_url):
                 response = self.admin_client.get(page_url)
-                if page_url in (NOTE_DETAIL_URL, NOTE_EDIT_URL, NOTE_DELETE_URL,):
-                    self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+                if page_url in (
+                    self.NOTE_DETAIL_URL,
+                    self.NOTE_EDIT_URL,
+                    self.NOTE_DELETE_URL,
+                ):
+                    self.assertEqual(
+                        response.status_code, HTTPStatus.NOT_FOUND
+                    )
                 else:
                     self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_pages_availability_for_anonymous_user(self):
+        """Check if anonymous user can access various pages."""
         for page_url in self.urls:
             with self.subTest(name=page_url):
                 response = self.client.get(page_url)
 
                 if page_url in (
-                    HOME_URL,
-                    LOGIN_URL,
-                    LOGOUT_URL,
-                    SIGNUP_URL,
+                    self.HOME_URL,
+                    self.LOGIN_URL,
+                    self.LOGOUT_URL,
+                    self.SIGNUP_URL,
                 ):
                     self.assertEqual(response.status_code, HTTPStatus.OK)
                 else:
-                    self.assertRedirects(response, f'{LOGIN_URL}?next={page_url}')
+                    self.assertRedirects(
+                        response, f'{self.LOGIN_URL}?next={page_url}'
+                    )
