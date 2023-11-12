@@ -8,6 +8,7 @@ pytestmark = pytest.mark.django_db
 
 
 def test_news_count(client, home_url, add_news_to_db):
+    """Test that the home page displays the correct number of news."""
     response = client.get(home_url)
     assert (
         len(response.context['object_list'])
@@ -16,12 +17,14 @@ def test_news_count(client, home_url, add_news_to_db):
 
 
 def test_news_order(client, home_url, add_news_to_db):
+    """Test that the news on the home page are ordered by date."""
     response = client.get(home_url)
     all_dates = [news.date for news in response.context['object_list']]
     assert all_dates == sorted(all_dates, reverse=True)
 
 
 def test_comments_order(client, news_url, add_comments_to_news):
+    """Test that comments on the news detail page are ordered by date."""
     response = client.get(news_url)
     assert 'news' in response.context
     news = response.context['news']
@@ -41,6 +44,7 @@ def test_comments_order(client, news_url, add_comments_to_news):
 def test_client_has_form(
     parametrized_client, has_form_result, news_url
 ):
+    """Test that the client context includes a CommentForm."""
     response = parametrized_client.get(news_url)
     assert (
         'form' in response.context

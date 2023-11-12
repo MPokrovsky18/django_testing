@@ -57,9 +57,10 @@ pytestmark = pytest.mark.django_db
         ),
     )
 )
-def test_pages_availability_for_anonymous_user(
+def test_pages_availability_for_difference_users(
     url_constant, parametrized_client, expected_status
 ):
+    """Check the availability of pages for difference users."""
     response = parametrized_client.get(url_constant)
     assert response.status_code == expected_status
 
@@ -72,6 +73,7 @@ def test_pages_availability_for_anonymous_user(
     )
 )
 def test_redirect_for_anonymous_client(client, url_constant, login_url):
+    """Check redirection for an anonymous client."""
     expexted_url = f'{login_url}?next={url_constant}'
     response = client.get(url_constant)
     assertRedirects(response, expexted_url)
