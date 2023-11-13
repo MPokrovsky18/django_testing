@@ -46,7 +46,6 @@ def test_client_has_form(
 ):
     """Test that the client context includes a CommentForm."""
     response = parametrized_client.get(news_url)
-    assert (
-        'form' in response.context
-        and isinstance(response.context['form'], CommentForm)
-    ) == has_form_result
+    assert ('form' in response.context) == has_form_result
+    if has_form_result:
+        assert isinstance(response.context['form'], CommentForm)

@@ -19,9 +19,10 @@ class TestContent(BaseTest):
 
     def test_notes_list_for_admin_user(self):
         """Admin user doesn't see author's note on the notes list page."""
+        self.assertEqual(Note.objects.count(), 1)
         response = self.admin_client.get(self.NOTE_LIST_URL)
         object_list = response.context['object_list']
-        self.assertFalse(self.note in object_list)
+        self.assertEqual(len(object_list), 0)
 
     def test_pages_contains_form(self):
         """Certain pages contain the expected form."""

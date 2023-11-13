@@ -35,14 +35,16 @@ class TestRoutes(BaseTest):
 
     def test_pages_availability_for_not_author(self):
         """Check if authorized non-author can access various pages."""
+        pages_without_availability = (
+            self.NOTE_DETAIL_URL,
+            self.NOTE_EDIT_URL,
+            self.NOTE_DELETE_URL,
+        )
+
         for page_url in self.urls:
             with self.subTest(name=page_url):
                 response = self.admin_client.get(page_url)
-                if page_url in (
-                    self.NOTE_DETAIL_URL,
-                    self.NOTE_EDIT_URL,
-                    self.NOTE_DELETE_URL,
-                ):
+                if page_url in pages_without_availability:
                     self.assertEqual(
                         response.status_code, HTTPStatus.NOT_FOUND
                     )
@@ -51,16 +53,18 @@ class TestRoutes(BaseTest):
 
     def test_pages_availability_for_anonymous_user(self):
         """Check if anonymous user can access various pages."""
+        pages_availability_for_anonymus = (
+            self.HOME_URL,
+            self.LOGIN_URL,
+            self.LOGOUT_URL,
+            self.SIGNUP_URL,
+        )
+
         for page_url in self.urls:
             with self.subTest(name=page_url):
                 response = self.client.get(page_url)
 
-                if page_url in (
-                    self.HOME_URL,
-                    self.LOGIN_URL,
-                    self.LOGOUT_URL,
-                    self.SIGNUP_URL,
-                ):
+                if page_url in pages_availability_for_anonymus:
                     self.assertEqual(response.status_code, HTTPStatus.OK)
                 else:
                     self.assertRedirects(

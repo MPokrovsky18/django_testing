@@ -7,62 +7,37 @@ from pytest_django.asserts import assertRedirects
 pytestmark = pytest.mark.django_db
 
 
+HOME_URL = pytest.lazy_fixture('home_url')
+NEWS_URL = pytest.lazy_fixture('news_url')
+LOGIN_URL = pytest.lazy_fixture('login_url')
+LOGOUT_URL = pytest.lazy_fixture('logout_url')
+SIGNUP_URL = pytest.lazy_fixture('signup_url')
+EDIT_URL = pytest.lazy_fixture('edit_url')
+DELETE_URL = pytest.lazy_fixture('delete_url')
+CLIENT = pytest.lazy_fixture('client')
+AUTHOR_CLIENT = pytest.lazy_fixture('author_client')
+ADMIN_CLIENT = pytest.lazy_fixture('admin_client')
+
+
 @pytest.mark.parametrize(
     'url_constant, parametrized_client, expected_status',
     (
-        (
-            pytest.lazy_fixture('home_url'),
-            pytest.lazy_fixture('client'),
-            HTTPStatus.OK
-        ),
-        (
-            pytest.lazy_fixture('news_url'),
-            pytest.lazy_fixture('client'),
-            HTTPStatus.OK
-        ),
-        (
-            pytest.lazy_fixture('login_url'),
-            pytest.lazy_fixture('client'),
-            HTTPStatus.OK
-        ),
-        (
-            pytest.lazy_fixture('logout_url'),
-            pytest.lazy_fixture('client'),
-            HTTPStatus.OK
-        ),
-        (
-            pytest.lazy_fixture('signup_url'),
-            pytest.lazy_fixture('client'),
-            HTTPStatus.OK
-        ),
-        (
-            pytest.lazy_fixture('edit_url'),
-            pytest.lazy_fixture('author_client'),
-            HTTPStatus.OK
-        ),
-        (
-            pytest.lazy_fixture('delete_url'),
-            pytest.lazy_fixture('author_client'),
-            HTTPStatus.OK
-        ),
-        (
-            pytest.lazy_fixture('edit_url'),
-            pytest.lazy_fixture('admin_client'),
-            HTTPStatus.NOT_FOUND
-        ),
-        (
-            pytest.lazy_fixture('delete_url'),
-            pytest.lazy_fixture('admin_client'),
-            HTTPStatus.NOT_FOUND
-        ),
+        (HOME_URL, CLIENT, HTTPStatus.OK),
+        (NEWS_URL, CLIENT, HTTPStatus.OK),
+        (LOGIN_URL, CLIENT, HTTPStatus.OK),
+        (LOGOUT_URL, CLIENT, HTTPStatus.OK),
+        (SIGNUP_URL, CLIENT, HTTPStatus.OK),
+        (EDIT_URL, AUTHOR_CLIENT, HTTPStatus.OK),
+        (DELETE_URL, AUTHOR_CLIENT, HTTPStatus.OK),
+        (EDIT_URL, ADMIN_CLIENT, HTTPStatus.NOT_FOUND),
+        (DELETE_URL, ADMIN_CLIENT, HTTPStatus.NOT_FOUND),
     )
 )
 def test_pages_availability_for_difference_users(
     url_constant, parametrized_client, expected_status
 ):
     """Check the availability of pages for difference users."""
-    response = parametrized_client.get(url_constant)
-    assert response.status_code == expected_status
+    assert parametrized_client.get(url_constant).status_code == expected_status
 
 
 @pytest.mark.parametrize(
@@ -74,6 +49,6 @@ def test_pages_availability_for_difference_users(
 )
 def test_redirect_for_anonymous_client(client, url_constant, login_url):
     """Check redirection for an anonymous client."""
-    expexted_url = f'{login_url}?next={url_constant}'
-    response = client.get(url_constant)
-    assertRedirects(response, expexted_url)
+    assertRedirects(
+        client.get(url_constant), f'{login_url}?next={url_constant}'
+    )

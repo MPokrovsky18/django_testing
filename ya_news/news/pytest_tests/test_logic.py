@@ -85,7 +85,7 @@ def test_author_can_delete_comment(author_client, news_url, delete_url):
     start_comment_count = Comment.objects.count()
     response = author_client.post(delete_url)
     assertRedirects(response, f'{news_url}#comments')
-    assert start_comment_count - Comment.objects.count() == 1
+    assert Comment.objects.count() == start_comment_count - 1
 
 
 def test_user_cant_delete_comment_of_another_user(admin_client, delete_url):
